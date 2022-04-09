@@ -1,0 +1,121 @@
+// vars
+$pyramid_width: 550px;
+$pyramid_light: rgb(255, 255, 0);
+$pyramid_color: transparentize($pyramid_light, 0.8);
+$bg_color: darken($pyramid_light, 80%);
+$pyramid_shadow_distance: 30px;
+$animation:10s linear infinite;
+
+
+// global style
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: $bg_color;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+@mixin absolute($top, $left) {
+    position: absolute;
+    top: $top;
+    left: $left;
+}
+
+@mixin items_width($width, $division) {
+    width: if($division==_, $width, ($width / $division));
+    height: if($division==_, $width, ($width / $division));
+}
+
+// Pyramid
+.container {
+    perspective: 250px;
+    filter: drop-shadow(0 0 40px $pyramid_light);
+
+    .pyramid {
+        @include items_width($pyramid_width, _);
+        position: relative;
+        transform-style: preserve-3d;
+        transform: translateZ(-$pyramid_width) rotateX(-15deg) rotateY(0deg);
+        animation: rotate_1 $animation;
+
+        @keyframes rotate_1 {
+            100% {
+                transform: translateZ(-$pyramid_width) rotateX(-15deg) rotateY(360deg);
+            }
+        }
+
+        .floor {
+            @include items_width($pyramid_width, _);
+            @include absolute(0, 0);
+            background-color: $pyramid_color;
+            transform: translateY(($pyramid_width/2) - $pyramid_shadow_distance) rotateX(90deg);
+            transform-style: preserve-3d;
+
+            &::before {
+                content: '';
+                display: block;
+                @include items_width($pyramid_width, 3);
+                background-image: radial-gradient(($pyramid_width/6), $pyramid_light, transparent);
+                filter: drop-shadow(0 0 ($pyramid_width/6) $pyramid_light);
+                border-radius: 50%;
+                @include absolute(50%, 50%);
+                transform: translate3d(-50%, -50%, $pyramid_width/3) rotateX(90deg) rotateY(0deg);
+                animation: rotate_2 $animation;
+            }
+
+            @keyframes rotate_2 {
+                100% {
+                    transform: translate3d(-50%, -50%, $pyramid_width/3) rotateX(90deg) rotateY(360deg);
+                }
+            }
+
+            &::after {
+                content: '';
+                display: block;
+                @include items_width($pyramid_width*2, _);
+                background-image: radial-gradient(($pyramid_width), transparentize($pyramid_light, .8), transparent);
+                @include absolute(-50%, -50%);
+                transform: translateZ(-$pyramid_shadow_distance);
+                animation: pyramid_shadow $animation;
+            }
+        }
+
+        .ceil {
+            transform: translateY(-$pyramid_shadow_distance);
+            transform-style: preserve-3d;
+
+            .side {
+                @include absolute(0, 0);
+                border-width: 0 ($pyramid_width/2) $pyramid_width ($pyramid_width/2);
+                border-style: solid;
+                border-color: transparent transparent $pyramid_color transparent;
+                filter: drop-shadow(0 0 10px $pyramid_light);
+                transform-origin: center bottom;
+
+                &:nth-child(1) {
+                    transform: translateX(50%) rotateX(90deg) rotateY(60deg) rotateZ(-90deg);
+                }
+
+                &:nth-child(2) {
+                    transform: translateZ($pyramid_width / 2) rotateX(30deg);
+                }
+
+                &:nth-child(3) {
+                    transform: translateX(-50%) rotateX(90deg) rotateY(120deg) rotateZ(-90deg);
+                }
+
+                &:nth-child(4) {
+                    transform: translateZ(-($pyramid_width / 2)) rotateX(-30deg);
+                }
+            }
+        }
+    }
+}
